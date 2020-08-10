@@ -18,10 +18,10 @@ This version of the game is known to work with:
 - OCamlSDL2 version 0.03
 
 After installing ocamlsdl2 you can run the game with:
-ocaml -I $(ocamlfind query sdl2) sdl2.cma colors_junction64.ml
+ocaml -I $(ocamlfind query sdl2) sdl2.cma chimp_test.ml
 
 If you just compiled ocamlsdl2 without installing it:
-ocaml -I ../OCamlSDL2/src sdl2.cma colors_junction64.ml
+ocaml -I ../OCamlSDL2/src sdl2.cma chimp_test.ml
 
 
 # License
