@@ -161,17 +161,22 @@ let rec event_loop () =
       | click -> click
 
 
+let point_in_rect ~p:(x, y) ~r =
+  ( (x >= r.Rect.x) && (x < (r.Rect.x + r.Rect.w)) &&
+    (y >= r.Rect.y) && (y < (r.Rect.y + r.Rect.h)) )
+
+
 let does_hit n (x, y) ns =
   match ns with
   | (_, _n, (_x, _y)) :: [] ->
       let r = Rect.make4 _x _y 5 5 in
-      if Rect.point_in_rect ~p:(x, y) ~r
+      if (*Rect.*)point_in_rect ~p:(x, y) ~r
       then (print_endline "Congratulation!"; Sdl.quit (); exit 0)
       else raise Game_Over
 
   | (_, _n, (_x, _y)) :: tail ->
       let r = Rect.make4 _x _y 5 5 in
-      _n = n && Rect.point_in_rect ~p:(x, y) ~r
+      _n = n && (*Rect.*)point_in_rect ~p:(x, y) ~r
   | [] ->
       assert false
 
