@@ -19,6 +19,7 @@ type test_state =
   | Visualise of (char * int * pos) list
   | Hidden of int * (char * int * pos) list
 
+exception Game_Over
 
 let width, height = (64, 64)
 
@@ -115,13 +116,23 @@ let display renderer numbers_tex test_state =
     let dst_rect = Rect.make4 x y size size in
     Render.copy renderer ~texture ~src_rect ~dst_rect ();
   in
+
+  let draw_square x y size =
+    let rect = Rect.make4 x y size size in
+    Render.set_draw_color renderer green alpha;
+    Render.fill_rect renderer rect;
+  in
+
   begin match test_state with
   | Visualise ns ->
       List.iter (fun (c, n, (x, y)) ->
         let tex = List.assoc c numbers_tex in
         draw_number tex x y 5;
       ) ns;
-  | Hidden (n, ns) -> ()
+  | Hidden (n, ns) ->
+      List.iter (fun (c, n, (x, y)) ->
+        draw_square x y 5;
+      ) ns;
   end;
 
   Render.render_present renderer;
@@ -150,10 +161,42 @@ let rec event_loop () =
       | click -> click
 
 
+let does_hit n (x, y) ns =
+  match ns with
+  | (_, _n, (_x, _y)) :: [] ->
+      let r = Rect.make4 _x _y 5 5 in
+      if Rect.point_in_rect ~p:(x, y) ~r
+      then (print_endline "Congratulation!"; Sdl.quit (); exit 0)
+      else raise Game_Over
+
+  | (_, _n, (_x, _y)) :: tail ->
+      let r = Rect.make4 _x _y 5 5 in
+      _n = n && Rect.point_in_rect ~p:(x, y) ~r
+  | [] ->
+      assert false
+
+
+let update_state event test_state =
+  match event with
+  | None -> test_state
+  | Some (x, y) ->
+      match test_state with
+      | Visualise ns ->
+          if does_hit 1 (x, y) ns
+          then Hidden (2, List.tl ns)
+          else raise Game_Over
+      | Hidden (n, ns) ->
+          if does_hit n (x, y) ns
+          then Hidden (succ n, List.tl ns)
+          else raise Game_Over
+
+
 let rec main_loop renderer numbers_tex test_state =
   let t = Timer.get_ticks () in
 
-  let _ = event_loop () in
+  let event = event_loop () in
+
+  let test_state = update_state event test_state in
 
   display renderer numbers_tex test_state;
 
@@ -207,7 +250,7 @@ let () =
     ) numbers_pat
   in
   let ns =
-    List.init 8 (fun i ->
+    List.init 9 (fun i ->
       let n = succ i in
       let x = Random.int (width - 5) in
       let y = Random.int (height - 5) in
