@@ -174,7 +174,7 @@ let texture_of_pattern renderer pattern ~color =
 
 let () =
   Random.self_init ();
-  Sdl.init [`VIDEO; `JOYSTICK];
+  Sdl.init [`VIDEO];
   let window, renderer =
     Render.create_window_and_renderer ~width:(width*2) ~height:(height*2) ~flags:[]
   in
