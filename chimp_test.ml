@@ -13,16 +13,24 @@
 *)
 open Sdl
 
+type pos = int * int  (* position (x, y) *)
+
+type test_state =
+  | Visualise of (char * int * pos) list
+  | Hidden of int * (char * int * pos) list
+
+
 let width, height = (64, 64)
 
 let blue   = (0, 0, 255)
 let green  = (0, 255, 0)
+let red    = (255, 0, 0)
 let yellow = (255, 255, 0)
 let white  = (255, 255, 255)
 let black  = (0, 0, 0)
 let alpha  = 255
 
-let numbers = [
+let numbers_pat = [
   '0', [|
     [| 0; 1; 1; 1; 0 |];
     [| 1; 0; 0; 0; 1 |];
@@ -99,7 +107,7 @@ let numbers = [
 let src_rect = Rect.make4 0 0 5 5
 
 
-let display renderer numbers_tex ns =
+let display renderer numbers_tex test_state =
   Render.set_draw_color renderer black alpha;
   Render.clear renderer;
 
@@ -107,10 +115,14 @@ let display renderer numbers_tex ns =
     let dst_rect = Rect.make4 x y size size in
     Render.copy renderer ~texture ~src_rect ~dst_rect ();
   in
-  List.iter (fun (n, (x, y)) ->
-    let tex = List.assoc n numbers_tex in
-    draw_number tex x y 5;
-  ) ns;
+  begin match test_state with
+  | Visualise ns ->
+      List.iter (fun (c, n, (x, y)) ->
+        let tex = List.assoc c numbers_tex in
+        draw_number tex x y 5;
+      ) ns;
+  | Hidden (n, ns) -> ()
+  end;
 
   Render.render_present renderer;
 ;;
@@ -138,19 +150,19 @@ let rec event_loop () =
       | click -> click
 
 
-let rec main_loop renderer numbers_tex ns =
+let rec main_loop renderer numbers_tex test_state =
   let t = Timer.get_ticks () in
 
   let _ = event_loop () in
 
-  display renderer numbers_tex ns;
+  display renderer numbers_tex test_state;
 
   let t2 = Timer.get_ticks () in
   let dt = t2 - t in
 
   Timer.delay (max 0 (50 - dt));
 
-  main_loop renderer numbers_tex ns
+  main_loop renderer numbers_tex test_state
 
 
 let pixel_for_surface ~surface ~rgb =
@@ -192,7 +204,7 @@ let () =
     List.map (fun (c, pat) ->
       let tex = texture_of_pattern renderer pat ~color:green in
       (c, tex)
-    ) numbers
+    ) numbers_pat
   in
   let ns =
     List.init 8 (fun i ->
@@ -200,8 +212,9 @@ let () =
       let x = Random.int (width - 5) in
       let y = Random.int (height - 5) in
       let c = (Printf.sprintf "%d" n).[0] in
-      (c, (x, y))
+      (c, n, (x, y))
     )
   in
+  let test_state = Visualise ns in
 
-  main_loop renderer numbers_tex ns
+  main_loop renderer numbers_tex test_state
