@@ -148,7 +148,7 @@ let rec main_loop renderer numbers_tex ns =
   let t2 = Timer.get_ticks () in
   let dt = t2 - t in
 
-  Timer.delay (max 0 (40 - dt));
+  Timer.delay (max 0 (50 - dt));
 
   main_loop renderer numbers_tex ns
 
