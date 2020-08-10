@@ -120,15 +120,22 @@ let proc_events = function
   | Event.KeyDown { Event.keycode = Keycode.Q }
   | Event.KeyDown { Event.keycode = Keycode.Escape }
   | Event.Quit _ -> Sdl.quit (); exit 0
-  | _ -> ()
+
+  | Event.Mouse_Button_Down mouse_button_event ->
+      let x = mouse_button_event.Event.mb_x in
+      let y = mouse_button_event.Event.mb_y in
+      Some (x, y)
+
+  | _ -> None
 
 
 let rec event_loop () =
   match Event.poll_event () with
-  | None -> ()
+  | None -> None
   | Some ev ->
-      let _ = proc_events ev in
-      event_loop ()
+      match proc_events ev with
+      | None -> event_loop ()
+      | click -> click
 
 
 let rec main_loop renderer numbers_tex ns =
