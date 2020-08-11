@@ -239,6 +239,46 @@ let texture_of_pattern renderer pattern ~color =
   (texture)
 
 
+let collide (_, _, (x1, y1)) (_, _, (x2, y2)) =
+  let a = {
+    Rect.x = x1;
+    Rect.y = y1;
+    Rect.w = 5;
+    Rect.h = 5;
+  } and b = {
+    Rect.x = x2;
+    Rect.y = y2;
+    Rect.w = 5;
+    Rect.h = 5;
+  } in
+  Rect.has_intersection ~a ~b
+
+
+let collision num numbers =
+  List.exists (fun number ->
+    collide num number
+  ) numbers
+
+
+let new_number i =
+  let n = succ i in
+  let x = Random.int (width - 5) in
+  let y = Random.int (height - 5) in
+  let c = (Printf.sprintf "%d" n).[0] in
+  (c, n, (x, y))
+
+
+let init_numbers n =
+  let rec aux i acc =
+    if i >= n then (List.rev acc) else
+      let number = new_number i in
+      (* check that no number initially collide with another one *)
+      if collision number acc then aux i acc
+      else aux (succ i) (number :: acc)
+  in
+  aux 0 []
+
+
 let () =
   Random.self_init ();
   Sdl.init [`VIDEO];
@@ -254,15 +294,7 @@ let () =
       (c, tex)
     ) numbers_pat
   in
-  let ns =
-    List.init 9 (fun i ->
-      let n = succ i in
-      let x = Random.int (width - 5) in
-      let y = Random.int (height - 5) in
-      let c = (Printf.sprintf "%d" n).[0] in
-      (c, n, (x, y))
-    )
-  in
+  let ns = init_numbers 9 in
   let test_state = Visualise ns in
 
   main_loop renderer numbers_tex test_state
