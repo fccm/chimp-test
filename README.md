@@ -14,17 +14,17 @@ https://github.com/fccm/OCamlSDL2
 
 This version of the program is known to work with:
 - SDL2 version 2.0.10
-- OCaml version 4.09.0
+- OCaml version 4.14.0
 - OCamlSDL2 version 0.03
 
 After installing ocamlsdl2 you can run the program with:
 ```
-ocaml -I $(ocamlfind query sdl2) sdl2.cma chimp_test.ml
+ocaml -w -6 -I $(ocamlfind query sdl2) sdl2.cma chimp_test.ml
 ```
 
 If you just compiled ocamlsdl2 without installing it:
 ```
-ocaml -I ../OCamlSDL2/src sdl2.cma chimp_test.ml
+ocaml -w -6 -I ../OCamlSDL2/src sdl2.cma chimp_test.ml
 ```
 
 
